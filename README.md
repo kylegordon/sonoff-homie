@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/kylegordon/sonoff-homie.svg?branch=master)](https://travis-ci.org/kylegordon/sonoff-homie)
 [Homie](https://github.com/marvinroger/homie) based firmware for Sonoff wifi relay
 
 ## Features:
