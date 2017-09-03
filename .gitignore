@@ -3,3 +3,5 @@
 .gcc-flags.json
 .piolibdeps
 .travis.yml
+.pioenvs
+.piolibdeps
