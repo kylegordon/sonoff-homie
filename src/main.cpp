@@ -6,8 +6,8 @@
  * - keepalive from server
  */
 
-#define FW_NAME "homie-sonoff"
-#define FW_VERSION "2.12"
+#define FW_NAME "homie-sonoff-switch"
+#define FW_VERSION "2.12.0"
 
 /* Magic sequence for Autodetectable Binary Upload */
 const char *__FLAGGED_FW_NAME = "\xbf\x84\xe4\x13\x54" FW_NAME "\x93\x44\x6b\xa7\x75";
