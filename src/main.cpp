@@ -6,6 +6,14 @@
  * - keepalive from server
  */
 
+#define FW_NAME "homie-sonoff"
+#define FW_VERSION "2.12"
+
+/* Magic sequence for Autodetectable Binary Upload */
+const char *__FLAGGED_FW_NAME = "\xbf\x84\xe4\x13\x54" FW_NAME "\x93\x44\x6b\xa7\x75";
+const char *__FLAGGED_FW_VERSION = "\x6a\x3f\x3e\x0e\xe1" FW_VERSION "\xb0\x30\x48\xd4\x1a";
+/* End of magic sequence for Autodetectable Binary Upload */
+
 #include <Homie.h>
 #include <EEPROM.h>
 #include <Bounce2.h>
@@ -34,16 +42,18 @@ HomieNode relayNode("relay01", "relay");
 HomieNode keepAliveNode("keepalive", "keepalive");
 
 // Event typu relay - manualne wymuszenie stanu
-bool relayStateHandler(String value) {
+bool relayStateHandler(const HomieRange& range, const String& value) {
   if (value == "ON") {
     digitalWrite(PIN_RELAY, HIGH);
     digitalWrite(PIN_LED, LOW);
-    Homie.setNodeProperty(relayNode, "relayState", "ON");
+    //Homie.setNodeProperty(relayNode, "relayState", "ON");
+    relayNode.setProperty("relayState").send("ON");
     //Serial.println("Switch is on");
   } else if (value == "OFF") {
     digitalWrite(PIN_RELAY, LOW);
     digitalWrite(PIN_LED, HIGH);
-    Homie.setNodeProperty(relayNode, "relayState", "OFF");
+    //Homie.setNodeProperty(relayNode, "relayState", "OFF");
+    relayNode.setProperty("relayState").send("OFF");
     //Serial.println("Switch is off");
   } else {
     return false;
@@ -52,14 +62,14 @@ bool relayStateHandler(String value) {
 }
 
 // Keepliave tick handler
-bool keepAliveTickHandler(String value)
+bool keepAliveTickHandler(const HomieRange& range, const String& value)
 {
   keepAliveReceived=millis();
   return true;
 }
 
 // Keepalive mode
-bool keepAliveValueHandler(String value)
+bool keepAliveValueHandler(const HomieRange& range, const String& value)
 {
   int oldValue = EEpromData.keepAliveValue;
   if (value.toInt() > 0)
@@ -78,7 +88,7 @@ bool keepAliveValueHandler(String value)
 }
 
 // Czasowe wymuszenie stanu
-bool relayTimerHandler(String value)
+bool relayTimerHandler(const HomieRange& range, const String& value)
 {
   if (value.toInt() > 0)
   {
@@ -86,8 +96,10 @@ bool relayTimerHandler(String value)
     digitalWrite(PIN_LED, LOW);
     downCounterStart = millis();
     downCounterLimit = value.toInt()*1000;
-    Homie.setNodeProperty(relayNode, "relayState", "ON");
-    Homie.setNodeProperty(relayNode, "relayTimer", value);
+    // Homie.setNodeProperty(relayNode, "relayState", "ON");
+    relayNode.setProperty("relayState").send("ON");
+    //Homie.setNodeProperty(relayNode, "relayTimer", value);
+    relayNode.setProperty("relayState").send(value);
     return true;
   } else {
     return false;
@@ -96,15 +108,17 @@ bool relayTimerHandler(String value)
 
 
 // Initial mode handler
-bool relayInitModeHandler(String value)
+bool relayInitModeHandler(const HomieRange& range, const String& value)
 {
   int oldValue = EEpromData.initialState;
   if (value.toInt() == 1 or value=="ON")
   {
-    Homie.setNodeProperty(relayNode, "relayInitMode", "1");
+    //Homie.setNodeProperty(relayNode, "relayInitMode", "1");
+    relayNode.setProperty("relayInitMode").send("1");
     EEpromData.initialState=1;
   } else {
-    Homie.setNodeProperty(relayNode, "relayInitMode", "0");
+    //Homie.setNodeProperty(relayNode, "relayInitMode", "0");
+    relayNode.setProperty("relayInitMode").send("0");
     EEpromData.initialState=0;
   }
   if (oldValue!=EEpromData.initialState)
@@ -121,14 +135,19 @@ void setupHandler()
 
   if (EEpromData.initialState==1)
   {
-    Homie.setNodeProperty(relayNode, "relayState", "ON");
-    Homie.setNodeProperty(relayNode, "relayInitMode", "1");
+    //Homie.setNodeProperty(relayNode, "relayState", "ON");
+    relayNode.setProperty("relayState").send("ON");
+    //Homie.setNodeProperty(relayNode, "relayInitMode", "1");
+    relayNode.setProperty("relayInitMode").send("1");
   } else {
-    Homie.setNodeProperty(relayNode, "relayState", "OFF");
-    Homie.setNodeProperty(relayNode, "relayInitMode", "0");
+    //Homie.setNodeProperty(relayNode, "relayState", "OFF");
+    relayNode.setProperty("relayState").send("OFF");
+    //Homie.setNodeProperty(relayNode, "relayInitMode", "0");
+    relayNode.setProperty("relayInitMode").send("0");
   }
   String outMsg = String(EEpromData.keepAliveValue);
-  Homie.setNodeProperty(keepAliveNode, "keepAliveValue", outMsg);
+  //Homie.setNodeProperty(keepAliveNode, "keepAliveValue", outMsg);
+  keepAliveNode.setProperty("keepAliveValue").send(outMsg);
   keepAliveReceived=millis();
 }
 
@@ -142,8 +161,10 @@ void loopHandler()
       // Turn off relay
       digitalWrite(PIN_RELAY, LOW);
       digitalWrite(PIN_LED, HIGH);
-      Homie.setNodeProperty(relayNode, "relayState", "OFF");
-      Homie.setNodeProperty(relayNode, "relayTimer", "0");
+      //Homie.setNodeProperty(relayNode, "relayState", "OFF");
+      relayNode.setProperty("relayState").send("OFF");
+      //Homie.setNodeProperty(relayNode, "relayTimer", "0");
+      relayNode.setProperty("relayTimer").send("0");
       downCounterLimit=0;
     }
   }
@@ -155,7 +176,7 @@ void loopHandler()
     int relayValue = digitalRead(PIN_RELAY);
     if (buttonValue == HIGH)
     {
-      relayStateHandler(!relayValue ? "ON" : "OFF");
+      relayStateHandler(const HomieRange& range, !relayValue ? "ON" : "OFF");
 
     }
   }
@@ -169,35 +190,36 @@ void loopHandler()
 }
 
 // Homie event
-void onHomieEvent(HomieEvent event) {
-  switch(event) {
-    case HOMIE_CONFIGURATION_MODE: // Default eeprom data in configuration mode
+void onHomieEvent(const HomieEvent& event) {
+  switch(event.type) {
+    case HomieEventType::CONFIGURATION_MODE: // Default eeprom data in configuration mode
       digitalWrite(PIN_RELAY, LOW);
       EEpromData.initialState=0;
       EEpromData.keepAliveValue = 0;
       EEPROM.put(0, EEpromData);
       EEPROM.commit();
       break;
-    case HOMIE_NORMAL_MODE:
+    //case HOMIE_NORMAL_MODE:
+    case HomieEventType::NORMAL_MODE:
       // Do whatever you want when normal mode is started
       break;
-    case HOMIE_OTA_MODE:
+    case HomieEventType::OTA_STARTED:
       // Do whatever you want when OTA mode is started
       digitalWrite(PIN_RELAY, LOW);
       break;
-    case HOMIE_ABOUT_TO_RESET:
+    case HomieEventType::ABOUT_TO_RESET:
       // Do whatever you want when the device is about to reset
       break;
-    case HOMIE_WIFI_CONNECTED:
+    case HomieEventType::WIFI_CONNECTED:
       // Do whatever you want when Wi-Fi is connected in normal mode
       break;
-    case HOMIE_WIFI_DISCONNECTED:
+    case HomieEventType::WIFI_DISCONNECTED:
       // Do whatever you want when Wi-Fi is disconnected in normal mode
       break;
-    case HOMIE_MQTT_CONNECTED:
+    case HomieEventType::MQTT_READY:
       // Do whatever you want when MQTT is connected in normal mode
       break;
-    case HOMIE_MQTT_DISCONNECTED:
+    case HomieEventType::MQTT_DISCONNECTED:
       // Do whatever you want when MQTT is disconnected in normal mode
       break;
   }
@@ -229,18 +251,25 @@ void setup()
     EEpromData.initialState==0;
   }
 
-  Homie.setFirmware("sonoff", "0.12");
-  Homie.setSetupFunction(setupHandler);
-  Homie.setLoopFunction(loopHandler);
+  Homie_setFirmware(FW_NAME, FW_VERSION);
+  //Homie.setSetupFunction(setupHandler);
+  //Homie.setLoopFunction(loopHandler);
+  Homie.setSetupFunction(setupHandler).setLoopFunction(loopHandler);
+
   Homie.setLedPin(PIN_LED, LOW);
   Homie.setResetTrigger(PIN_BUTTON, LOW, 10000);
-  relayNode.subscribe("relayState", relayStateHandler);
-  relayNode.subscribe("relayInitMode", relayInitModeHandler);
-  relayNode.subscribe("relayTimer", relayTimerHandler);
-  keepAliveNode.subscribe("tick", keepAliveTickHandler);
-  keepAliveNode.subscribe("keepAliveValue",keepAliveValueHandler);
-  Homie.registerNode(relayNode);
-  Homie.registerNode(keepAliveNode);
+  //relayNode.subscribe("relayState", relayStateHandler);
+  relayNode.advertise("relayState").settable(relayStateHandler);
+  //relayNode.subscribe("relayInitMode", relayInitModeHandler);
+  relayNode.advertise("relayInitMode").settable(relayInitModeHandler);
+  //relayNode.subscribe("relayTimer", relayTimerHandler);
+  relayNode.advertise("relayTimer").settable(relayTimerHandler);
+  //keepAliveNode.subscribe("tick", keepAliveTickHandler);
+  keepAliveNode.advertise("tick").settable(keepAliveTickHandler);
+  //keepAliveNode.subscribe("keepAliveValue",keepAliveValueHandler);
+  keepAliveNode.advertise("keepAliveValue").settable(keepAliveValueHandler);
+  //Homie.registerNode(relayNode);
+  //Homie.registerNode(keepAliveNode);
   Homie.onEvent(onHomieEvent);
   Homie.setup();
 }
