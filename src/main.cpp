@@ -41,8 +41,7 @@ Bounce debouncerButton = Bounce();
 HomieNode relayNode("relay01", "relay");
 HomieNode keepAliveNode("keepalive", "keepalive");
 
-// Event typu relay - manualne wymuszenie stanu
-bool relayStateHandler(const HomieRange& range, const String& value) {
+bool relayState(const String& value) {
   if (value == "ON") {
     digitalWrite(PIN_RELAY, HIGH);
     digitalWrite(PIN_LED, LOW);
@@ -59,6 +58,11 @@ bool relayStateHandler(const HomieRange& range, const String& value) {
     return false;
   }
   return true;
+}
+
+// Event typu relay - manualne wymuszenie stanu
+bool relayStateHandler(const HomieRange& range, const String& value) {
+  relayState(value);
 }
 
 // Keepliave tick handler
@@ -176,8 +180,7 @@ void loopHandler()
     int relayValue = digitalRead(PIN_RELAY);
     if (buttonValue == HIGH)
     {
-      relayStateHandler(const HomieRange& range, !relayValue ? "ON" : "OFF");
-
+      relayState(!relayValue ? "ON" : "OFF");
     }
   }
   debouncerButton.update();
