@@ -139,18 +139,13 @@ void setupHandler()
 
   if (EEpromData.initialState==1)
   {
-    //Homie.setNodeProperty(relayNode, "relayState", "ON");
     relayNode.setProperty("relayState").send("ON");
-    //Homie.setNodeProperty(relayNode, "relayInitMode", "1");
     relayNode.setProperty("relayInitMode").send("1");
   } else {
-    //Homie.setNodeProperty(relayNode, "relayState", "OFF");
     relayNode.setProperty("relayState").send("OFF");
-    //Homie.setNodeProperty(relayNode, "relayInitMode", "0");
     relayNode.setProperty("relayInitMode").send("0");
   }
   String outMsg = String(EEpromData.keepAliveValue);
-  //Homie.setNodeProperty(keepAliveNode, "keepAliveValue", outMsg);
   keepAliveNode.setProperty("keepAliveValue").send(outMsg);
   keepAliveReceived=millis();
 }
@@ -165,9 +160,7 @@ void loopHandler()
       // Turn off relay
       digitalWrite(PIN_RELAY, LOW);
       digitalWrite(PIN_LED, HIGH);
-      //Homie.setNodeProperty(relayNode, "relayState", "OFF");
       relayNode.setProperty("relayState").send("OFF");
-      //Homie.setNodeProperty(relayNode, "relayTimer", "0");
       relayNode.setProperty("relayTimer").send("0");
       downCounterLimit=0;
     }
@@ -255,24 +248,15 @@ void setup()
   }
 
   Homie_setFirmware(FW_NAME, FW_VERSION);
-  //Homie.setSetupFunction(setupHandler);
-  //Homie.setLoopFunction(loopHandler);
   Homie.setSetupFunction(setupHandler).setLoopFunction(loopHandler);
 
   Homie.setLedPin(PIN_LED, LOW);
   Homie.setResetTrigger(PIN_BUTTON, LOW, 10000);
-  //relayNode.subscribe("relayState", relayStateHandler);
   relayNode.advertise("relayState").settable(relayStateHandler);
-  //relayNode.subscribe("relayInitMode", relayInitModeHandler);
   relayNode.advertise("relayInitMode").settable(relayInitModeHandler);
-  //relayNode.subscribe("relayTimer", relayTimerHandler);
   relayNode.advertise("relayTimer").settable(relayTimerHandler);
-  //keepAliveNode.subscribe("tick", keepAliveTickHandler);
   keepAliveNode.advertise("tick").settable(keepAliveTickHandler);
-  //keepAliveNode.subscribe("keepAliveValue",keepAliveValueHandler);
   keepAliveNode.advertise("keepAliveValue").settable(keepAliveValueHandler);
-  //Homie.registerNode(relayNode);
-  //Homie.registerNode(keepAliveNode);
   Homie.onEvent(onHomieEvent);
   Homie.setup();
 }
