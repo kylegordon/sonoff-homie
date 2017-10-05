@@ -45,15 +45,11 @@ bool relayState(const String& value) {
   if (value == "ON") {
     digitalWrite(PIN_RELAY, HIGH);
     digitalWrite(PIN_LED, LOW);
-    //Homie.setNodeProperty(relayNode, "relayState", "ON");
     relayNode.setProperty("relayState").send("ON");
-    //Serial.println("Switch is on");
   } else if (value == "OFF") {
     digitalWrite(PIN_RELAY, LOW);
     digitalWrite(PIN_LED, HIGH);
-    //Homie.setNodeProperty(relayNode, "relayState", "OFF");
     relayNode.setProperty("relayState").send("OFF");
-    //Serial.println("Switch is off");
   } else {
     return false;
   }
@@ -100,9 +96,7 @@ bool relayTimerHandler(const HomieRange& range, const String& value)
     digitalWrite(PIN_LED, LOW);
     downCounterStart = millis();
     downCounterLimit = value.toInt()*1000;
-    // Homie.setNodeProperty(relayNode, "relayState", "ON");
     relayNode.setProperty("relayState").send("ON");
-    //Homie.setNodeProperty(relayNode, "relayTimer", value);
     relayNode.setProperty("relayState").send(value);
     return true;
   } else {
@@ -117,11 +111,9 @@ bool relayInitModeHandler(const HomieRange& range, const String& value)
   int oldValue = EEpromData.initialState;
   if (value.toInt() == 1 or value=="ON")
   {
-    //Homie.setNodeProperty(relayNode, "relayInitMode", "1");
     relayNode.setProperty("relayInitMode").send("1");
     EEpromData.initialState=1;
   } else {
-    //Homie.setNodeProperty(relayNode, "relayInitMode", "0");
     relayNode.setProperty("relayInitMode").send("0");
     EEpromData.initialState=0;
   }
