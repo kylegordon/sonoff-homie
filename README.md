@@ -1,3 +1,5 @@
+DEPRECATED in favour of the original, now with Homie v2 support, at https://github.com/enc-X/sonoff-homie
+
 [![Build Status](https://travis-ci.org/kylegordon/sonoff-homie.svg?branch=master)](https://travis-ci.org/kylegordon/sonoff-homie)
 [Homie](https://github.com/marvinroger/homie) based firmware for Sonoff wifi relay
 
