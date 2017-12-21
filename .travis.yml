@@ -17,8 +17,7 @@ env:
 
 install:
     - pip install -U platformio
-    #- platformio lib -g install Homie
-    - platformio lib -g install https://github.com/marvinroger/homie-esp8266/archive/develop.zip
 
 script:
-    - platformio ci --board=esp8285
+    - platformio lib update
+    - platformio run
